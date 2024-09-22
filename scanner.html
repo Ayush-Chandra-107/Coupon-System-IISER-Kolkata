@@ -19,7 +19,7 @@
           console.log(`Scan result ${decodedText}`, decodedResult);
 
           // Call Google Apps Script function and handle response
-          google.script.run.withSuccessHandler(function(response) {            // SuccessHandler is defined in file named 'qr_code_scan.gs'.
+          google.script.run.withSuccessHandler(function(response) {
             if (response === "ok") {
               $('#qr-reader-results').prepend("<p>" + decodedText + "</p>");
               alert("Scan successful!")
@@ -28,7 +28,7 @@
             } else if (response === "UTR not recognised") {
               alert("Error: UTR not recognised!");
             }
-          }).sendback(decodedText);
+          }).sendback(decodedText);            // sendback is the function defined in file named 'qr_code_scan.gs'.
 
           await waitme();
         }
