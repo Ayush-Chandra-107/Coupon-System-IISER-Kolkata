@@ -1,6 +1,5 @@
-// Contact ac22ms107@iiserkol.ac.in for any assistance regarding this code
 var ss = SpreadsheetApp.getActiveSpreadsheet();
-var sheet = ss.getSheetByName('Scan');
+var sheet = ss.getSheetByName('Scan'); // Should be name of your second spreadsheet
 
 function doGet() {
   var tmpl = HtmlService.createTemplateFromFile('scanner');
