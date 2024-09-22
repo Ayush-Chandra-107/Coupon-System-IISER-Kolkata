@@ -20,11 +20,11 @@ This repository provides a complete solution for managing a couponing system usi
    - Email (Short Answer)
    - UTR Number (Short Answer)
    - Food Preference (Multiple Choice or Dropdown)
-        This had three options in my case, the first two don't matter but the third one has a reference in the code (qr_generate+mail.gs)
-           a. Non-Veg
-           b. Veg
-           c. No food
-        For option c, no mail was sent, no qr code was generated, and no UTR was stored in the list for scanning. You may change this as per your need in qr_generate+mail.gs
+     - This had three options in my case, the first two don't matter but the third one has a reference in the code (`qr_generate+mail.gs`):
+       - a. Non-Veg
+       - b. Veg
+       - c. No food
+     - For option c, no mail was sent, no QR code was generated, and no UTR was stored in the list for scanning. You may change this as per your need in `qr_generate+mail.gs`.
    
 4. After completing the form, click on the "Responses" tab and select the green Google Sheets icon to link your form to a new Google Spreadsheet. Name the sheet appropriately (e.g., `Form Responses 1`).
 
@@ -81,14 +81,14 @@ This will ensure that the QR code and email are generated and sent automatically
 
 ## Remember
 
-- **Permissions**: Ensure that the web app is set to allow anyone to access. This will allow the QR code scanner to function publicly without issues. Also someone using the scanner needs the permission to edit your spreadsheet.
+- **Permissions**: Ensure that the web app is set to allow anyone to access. This will allow the QR code scanner to function publicly without issues. Also, someone using the scanner needs permission to edit your spreadsheet.
 - **Form Fields**: Make sure the form field order in your Google Form matches the column reference in the scripts.
 - **Testing**: Before using the system live, thoroughly test the form submission, email sending, and QR code scanning to ensure all parts are working smoothly.
 - **UTR Tracking**: The second sheet, `Scan`, will track all UTR numbers and their scan status. It’s important that this sheet is not modified manually to avoid breaking the system.
 
 ## Collaborations
 
-I have taken the code for QR code scanner from [Minhaz](https://github.com/mebjas/html5-qrcode/tree/master/examples/html5) huge shoutout to him. His work is really great.
+I have taken the code for QR code scanner from [Minhaz](https://github.com/mebjas/html5-qrcode/tree/master/examples/html5) — huge shoutout to him. His work is really great.
 
 For any questions or further assistance, contact:  
 **ac22ms107@iiserkol.ac.in**
