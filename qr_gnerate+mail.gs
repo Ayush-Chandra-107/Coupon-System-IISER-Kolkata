@@ -17,7 +17,7 @@ function onFormSubmit(e) {
     // Mail body
     var mail_body = `
 
-    //Write the body of your mail here
+    bo                    //Write the body of your mail in place of 'bo'
     
     `;
 
@@ -28,7 +28,7 @@ function onFormSubmit(e) {
       // Send Email
       MailApp.sendEmail({
           to: email,
-          subject: "Agomoni Mahabhoj Coupon and Event Details",
+          subject: "",            //Add your subject in between the quotes
           htmlBody: mail_body
       });
     
