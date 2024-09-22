@@ -8,7 +8,6 @@
 
     <script type="text/javascript">
 
-    // Contact ac22ms107@iiserkol.ac.in for any assistance regarding this code
 
       var resultContainer = document.getElementById('qr-reader-results');
       var lastResult, countResults = 0;
@@ -20,7 +19,7 @@
           console.log(`Scan result ${decodedText}`, decodedResult);
 
           // Call Google Apps Script function and handle response
-          google.script.run.withSuccessHandler(function(response) {
+          google.script.run.withSuccessHandler(function(response) {            // SuccessHandler is defined in file named 'qr_code_scan.gs'.
             if (response === "ok") {
               $('#qr-reader-results').prepend("<p>" + decodedText + "</p>");
               alert("Scan successful!")
@@ -38,14 +37,14 @@
       setTimeout(function(){
         var html5QrcodeScanner = new Html5QrcodeScanner(
           "qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);
+        html5QrcodeScanner.render(onScanSuccess);            // onScanSuccess is defined above.
       }, 500);  
 
       function waitme() {
         return new Promise(function(resolve) {
           setTimeout(function() {
             resolve('ok');
-          }, 1000);
+          }, 1000);        //You can decrease this for faster scans, in turn compromising with the correctness of the scans (500 may be ok though).
         });
       }
 
