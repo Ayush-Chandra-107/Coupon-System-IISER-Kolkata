@@ -1,12 +1,12 @@
 var ss = SpreadsheetApp.getActiveSpreadsheet();
-var sheet = ss.getSheetByName('Scan'); // Should be name of your second spreadsheet
+var sheet = ss.getSheetByName('Scan');       // Scan is the name of the second spreadsheet
 
 function doGet() {
-  var tmpl = HtmlService.createTemplateFromFile('scanner');
+  var tmpl = HtmlService.createTemplateFromFile('scanner');      //scanner is the name of 3rd file
   return tmpl.evaluate().setTitle('scanner');
 }
 
-function sendback(x) {
+function sendback(x) {            //Will be referred in scanner.html
   // Get all the data in the first column of second sheet (containing the UTR numbers)
   var data = sheet.getRange('A:A').getValues();
   var y = -1;
@@ -29,7 +29,7 @@ function sendback(x) {
       return "error";  // Error message if the value is already 'yes'
     }
   } else {
-    // If no matching row was found, return "UTI not recognised" message
+    // If no matching row was found, return "UTR not recognised" message
     return "UTR not recognised";
   }
 }
