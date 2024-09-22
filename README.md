@@ -20,6 +20,11 @@ This repository provides a complete solution for managing a couponing system usi
    - Email (Short Answer)
    - UTR Number (Short Answer)
    - Food Preference (Multiple Choice or Dropdown)
+        This had three options in my case, the first two don't matter but the third one has a reference in the code (qr_generate+mail.gs)
+           a. Non-Veg
+           b. Veg
+           c. No food
+        For option c, no mail was sent, no qr code was generated, and no UTR was stored in the list for scanning. You may change this as per your need in qr_generate+mail.gs
    
 4. After completing the form, click on the "Responses" tab and select the green Google Sheets icon to link your form to a new Google Spreadsheet. Name the sheet appropriately (e.g., `Form Responses 1`).
 
