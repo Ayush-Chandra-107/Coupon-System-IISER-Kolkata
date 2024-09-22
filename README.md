@@ -102,3 +102,7 @@ I have taken the code for QR code scanner from [Minhaz](https://github.com/mebja
 
 For any questions or further assistance, contact:  
 **ac22ms107@iiserkol.ac.in**
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
