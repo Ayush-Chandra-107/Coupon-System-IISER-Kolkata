@@ -7,7 +7,7 @@ function doGet() {
 }
 
 function sendback(x) {
-  // Get all the data in the first column
+  // Get all the data in the first column of second sheet (containing the UTR numbers)
   var data = sheet.getRange('A:A').getValues();
   var y = -1;
 
