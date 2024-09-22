@@ -41,15 +41,16 @@ Once the form is linked to a spreadsheet:
 1. Open your spreadsheet.
 2. From the toolbar, click on `Extensions` > `Apps Script`. This will open the Google Apps Script editor.
 3. In the editor, create three separate files and paste the respective code from this repository.
-
-   - **File 1: `qr_generate+mail.gs`**
-     - Paste the code provided in the `qr_generate+mail.gs` file.
-     - This code generates a QR code for the user's UTR number and sends an auto-generated email with the QR code.
    
-   - **File 2: `qr_code_scan.gs`**
+   - **File 1: `qr_code_scan.gs`**
      - Paste the code provided in the `qr_code_scan.gs` file.
      - This code handles the verification of scanned QR codes and checks whether the UTR number has already been used.
 
+   - **File 2: `qr_generate+mail.gs`**
+     - Paste the code provided in the `qr_generate+mail.gs` file.
+     - You need to edit a few thigs like the column numbers for different responses(at the top), mail body and subject.
+     - This code generates a QR code for the user's UTR number and sends an auto-generated email with the QR code.
+   
    - **File 3: `scanner.html`**
      - Create an HTML file and paste the code provided in the `scanner.html` file.
      - This code sets up the front-end interface for scanning the QR codes using the camera.
@@ -78,6 +79,15 @@ This will ensure that the QR code and email are generated and sent automatically
 2. Check your email for the QR code and other details.
 3. Visit the deployed web app (scanner) and scan the QR code to verify.
 4. If the UTR number is not recognized, has already been scanned, or is valid, you will receive the respective message.
+
+### Scanning
+
+1. Open the URL you generated after deploying the QR code scanner.
+2. Give the required camera permisiions.
+3. Choose back camera from the dropdown menu for convenience.
+4. Select start scanning.
+5. Each successful scan will lead to a popup, select 'ok' to close it and continue scanning.
+6. Same code won't be scanned twice in a row. You need to scan a seperate QR before reattempting to scan a code for the 2nd time.
 
 ## Remember
 
