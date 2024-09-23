@@ -17,7 +17,7 @@ function onFormSubmit(e) {
     // Mail body
     var mail_body = `
 
-    bo                    //Write the body of your mail in place of 'bo'
+    bo                    //Write the body of your mail in place of 'bo' in standard JavaScript format
     
     `;
 
