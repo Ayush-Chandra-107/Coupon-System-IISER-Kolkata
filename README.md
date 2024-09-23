@@ -100,9 +100,6 @@ This will ensure that the QR code and email are generated and sent automatically
 
 I have taken the code for QR code scanner from [Minhaz](https://github.com/mebjas/html5-qrcode/tree/master/examples/html5) — huge shoutout to him. His work is really great.
 
-For any questions or further assistance, contact:  
-**ac22ms107@iiserkol.ac.in**
-
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
