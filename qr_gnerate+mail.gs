@@ -17,10 +17,10 @@ function onFormSubmit(e) {
     // Mail body
     var mail_body = `
 
-    bo                    //Write the body of your mail in place of 'bo' in standard JavaScript format
+    bo                    
     
     `;
-
+//Write the body of your mail in place of 'bo' in standard JavaScript format
     if (pref == "No food") {                // You can change the "No food" as per your convenience, also you can remove this if-else part altogether if not needed.
       return;
     }
