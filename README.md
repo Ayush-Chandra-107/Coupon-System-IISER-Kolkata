@@ -68,7 +68,7 @@ This will ensure that the QR code and email are generated and sent automatically
 
 ### Step 5: Deploy the QR Code Scanner
 
-1. In the Apps Script editor, go to the `Deploy` menu and select `Test deployments` > `Deploy as web app`.
+1. In the Apps Script editor, go to the `Deploy` menu and select `New deployment` > `Deploy as web app`.
 2. Set the access permissions to "Anyone".
 3. Copy the web app URL provided after deployment.
 4. This URL can now be used to scan QR codes and check UTR validity.
