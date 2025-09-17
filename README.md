@@ -64,8 +64,8 @@ Your spreadsheet will act as the database.
 This is where the magic happens.
 
 1.  In your Google Sheet, navigate to `Extensions` > `Apps Script`.
-2.  You will see one default file named `Code.gs`. Create two more files by clicking the `+` icon next to "Files".
-3.  You should now have three files. Copy the code from this repository into them as follows:
+2.  You will see one default file named `Code.gs`. Create two more files by clicking the `+` icon next to "Files". One of them will be an `HTML` file and the other one will be a `Script` file
+3.  You should now have three files. Copy the code from this repository into them as follows (Ensure correctly renaming the files):
     * **File 1 (Script): `qr_generate+mail.gs`**
         * Paste the code from the corresponding file. This script handles QR generation and emailing.
     * **File 2 (Script): `qr_code_scan.gs`**
@@ -101,7 +101,7 @@ This makes the scanner accessible via a public URL.
 
 ---
 
-## Usage Guide 📱
+## Usage Guide
 
 ### Testing the System
 
@@ -109,7 +109,7 @@ This makes the scanner accessible via a public URL.
 2.  Check your email. You should receive the coupon email within a minute.
 3.  Open the deployed Web App URL on your phone's browser.
 4.  Scan the QR code from the email.
-5.  The web app should display a success message. Try scanning it again—it should now show an error that the code has already been used.
+5.  The web app should display a success message. Try scanning it again (you need to scan a random QR before this, because the app doesn't scan the same QR twice in a row, as discussed ahead)—it should now show an error that the code has already been used.
 
 ### Scanning at the Event
 
