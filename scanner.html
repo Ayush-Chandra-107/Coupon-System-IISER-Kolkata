@@ -1,61 +1,185 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top">
+  <head>
+        <base target="_top">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
-    <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+        <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" crossorigin="anonymous"></script>
+        <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
 
-    <script type="text/javascript">
+        <style>
+      body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f7f9fb;
+        color: #333;
+      }
 
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
 
-      var resultContainer = document.getElementById('qr-reader-results');
-      var lastResult, countResults = 0;
+      /* The main container uses flexbox to arrange the scanner and results areas. */
+      .container {
+        display: flex;
+        flex-wrap: wrap; /* Allows items to stack on smaller screens. */
+        gap: 30px;
+        justify-content: center;
+        align-items: flex-start;
+      }
 
-      async function onScanSuccess(decodedText, decodedResult) {
-        if (decodedText !== lastResult) {
-          ++countResults;
-          lastResult = decodedText;
-          console.log(`Scan result ${decodedText}`, decodedResult);
+      /* Styles the div where the camera feed and scanner UI will be rendered. */
+      #qr-reader {
+        width: 100%;
+        max-width: 400px;
+        border: 2px solid #ccc;
+        border-radius: 10px;
+        padding: 10px;
+        background-color: white;
+      }
 
-          // Call Google Apps Script function and handle response
-          google.script.run.withSuccessHandler(function(response) {
-            if (response === "ok") {
-              $('#qr-reader-results').prepend("<p>" + decodedText + "</p>");
-              alert("Scan successful!")
-            } else if (response === "error") {
-              alert("Error: QR code already scanned!");
-            } else if (response === "UTR not recognised") {
-              alert("Error: UTR not recognised!");
-            }
-          }).sendback(decodedText);            // sendback is the function defined in file named 'qr_code_scan.gs'.
+      /* Styles the div that will display the success or error messages after a scan. */
+      #qr-reader-results {
+        max-width: 300px;
+        background-color: #fff;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      }
 
-          await waitme();
-        }
-      }
+      /* Base style for all alert messages (success or error). */
+      .alert {
+        padding: 15px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        opacity: 1;
+        transition: opacity 1s ease-out; /* Defines the fade-out animation. */
+      }
 
-      setTimeout(function(){
-        var html5QrcodeScanner = new Html5QrcodeScanner(
-          "qr-reader", { fps: 10, qrbox: 250 });
-        html5QrcodeScanner.render(onScanSuccess);            // onScanSuccess is defined above.
-      }, 500);  
+      /* Specific style for success messages (green). */
+      .alert-success {
+        background-color: #e6ffed;
+        color: #227a36;
+        border-left: 5px solid #38a169;
+      }
 
-      function waitme() {
-        return new Promise(function(resolve) {
-          setTimeout(function() {
-            resolve('ok');
-          }, 1000);        //You can decrease this for faster scans, in turn compromising with the correctness of the scans (500 may be ok though).
-        });
-      }
+      /* Specific style for error messages (red). */
+      .alert-error {
+        background-color: #ffe6e6;
+        color: #b30000;
+        border-left: 5px solid #e53e3e;
+      }
 
-      window.addEventListener('beforeunload', function (e) {
-        e.preventDefault();
-        e.returnValue = '3';
-      });
-    </script>
-  </head>
-  <body>
-    <div id="qr-reader" style="width:500px"></div>
-    <div style="position:absolute; top:0px; left:520px" id="qr-reader-results"></div>
-  </body>
+      /* This class is added via JavaScript to trigger the fade-out animation. */
+      .fade-out {
+        opacity: 0;
+      }
+    </style>
+
+    <script type="text/javascript">
+
+      // --- Global variables for client-side script ---
+      // Stores the text of the last successfully scanned QR code to prevent duplicate processing.
+      var lastResult = null;
+      // A simple counter for the number of scans.
+      var countResults = 0;
+
+      /**
+       * This is the callback function that the html5-qrcode library executes
+       * whenever a QR code is successfully detected and decoded.
+       * @param {string} decodedText The text content extracted from the QR code.
+       * @param {object} decodedResult An object containing more detailed scan results.
+       */
+      async function onScanSuccess(decodedText, decodedResult) {
+        // This 'if' statement is a simple debounce mechanism. It ensures that if the camera
+        // reads the same QR code multiple times in a row, we only process it once.
+        if (decodedText !== lastResult) {
+          ++countResults;
+          lastResult = decodedText;
+
+          // Use `google.script.run` to call a server-side Apps Script function.
+          // `withSuccessHandler` defines a function to run when the server-side call completes successfully.
+          google.script.run.withSuccessHandler(function(response) {
+            // 'response' contains the return value from the 'sendback' function (e.g., "veg", "error").
+            const resultsDiv = $('#qr-reader-results'); // Get the results display area using jQuery.
+
+            // Initialize variables for the message text and CSS class.
+            let message = '';
+            let alertClass = 'alert-success';
+
+            // Determine the message and alert style based on the server's response.
+            if (response.toLowerCase().includes("nonveg")){
+              message = `✅ Non-Veg Coupon verified Successfully!`;
+            } else if (response.toLowerCase().includes("veg")) {
+              message = `✅ Veg Coupon verified Successfully!`;
+            } else if (response === "error") {
+              message = `⚠️ Error: QR code already scanned!`;
+              alertClass = 'alert-error';
+            } else if (response === "UTR not recognised") {
+              message = `⚠️ Error: UTR not recognised!`;
+              alertClass = 'alert-error';
+            } 
+
+            // Create a unique ID for the new message element using the current timestamp.
+            const messageId = `message-${Date.now()}`;
+            // Add the new message to the top of the results div.
+            resultsDiv.prepend(`<div id="${messageId}" class="alert ${alertClass}">${message}</div>`);
+
+            // Set a timer to automatically fade out and remove the message after a delay.
+            // After 15 seconds, add the 'fade-out' class to start the transition.
+            setTimeout(() => {
+              $(`#${messageId}`).addClass('fade-out');
+              // After another second (once the fade is complete), remove the element from the page.
+              setTimeout(() => {
+                $(`#${messageId}`).remove();
+              }, 1000);
+            }, 15000);
+
+          // This is the actual call to the server-side function. It calls 'sendback' and passes the QR code text as an argument.
+          }).sendback(decodedText);
+
+          await waitme(); // Wait for the 'waitme' function to complete.
+        }
+      }
+
+      /**
+       * A simple helper function that returns a Promise which resolves after a 1-second delay.
+       * This can be used to add a small pause between processing different QR codes.
+       */
+      function waitme() {
+        return new Promise(resolve => {
+          setTimeout(() => resolve('ok'), 1000);
+        });
+      }
+
+      // This code block runs after the page has loaded.
+      // It waits 500ms to ensure all elements are available in the DOM.
+      setTimeout(function() {
+        // Create a new instance of the Html5QrcodeScanner, telling it to render inside the div with id 'qr-reader'.
+        // { fps: 10, qrbox: 250 } are configuration options: scan at 10 frames per second and draw a 250x250px scanning box.
+        const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+        // Start the scanner and tell it to call our `onScanSuccess` function when it finds a code.
+        scanner.render(onScanSuccess);
+      }, 500);
+
+      // This event listener tries to prevent accidental closing of the page.
+      // It will prompt the user with a confirmation dialog if they try to refresh or close the tab.
+      window.addEventListener('beforeunload', function (e) {
+        e.preventDefault();
+        e.returnValue = '3'; // This value is required for legacy browser compatibility.
+      });
+    </script>
+  </head>
+
+  <body>
+    <h1>Agomoni QR Code Scanner</h1>
+        <div class="container">
+            <div id="qr-reader"></div>
+            <div id="qr-reader-results"></div>
+    </div>
+  </body>
 </html>
