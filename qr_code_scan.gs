@@ -5,7 +5,6 @@
 // 1. A frontend server (`doGet`) that displays the scanner interface from an HTML file.
 // 2. A backend function (`sendback`) that processes the scanned data, validates it against a
 //    spreadsheet, updates the attendance status, and returns the result to the scanner interface.
-// Contact ac22ms107@iiserkol.ac.in for any assistance regarding this code
 
 // --- Global Variables ---
 // Get the currently active Google Spreadsheet. This is defined globally so it can be accessed by all functions.
