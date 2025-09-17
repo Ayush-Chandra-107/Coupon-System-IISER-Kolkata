@@ -22,9 +22,38 @@ function onFormSubmit(e) {
     `;
 //Write the body of your mail in place of 'bo' in standard JavaScript format
     if (pref == "No food") {                // You can change the "No food" as per your convenience, also you can remove this if-else part altogether if not needed.
-      return;
-    }
-    else{
+      return; // Exit the function, no email will be sent and no sheets will be updated.
+    }
+    // If the user selected a food option, proceed with the following actions.
+    else{
+      
+      // --- Update the 'Scan' sheet for attendance ---
+      var scansheet = ss.getSheetByName('Scan');
+      // In the 'Scan' sheet, set the unique ID in the first column of the corresponding row.
+      scansheet.getRange(lastRow, 1).setValue(uniqueID);
+      // Set the food preference in the third column.
+      scansheet.getRange(lastRow, 3).setValue(pref);
+      // Set the initial scan status to 'no' in the second column. This will be updated to 'yes' when the QR is scanned.
+      scansheet.getRange(lastRow, 2).setValue('no');
+
+      // --- Update segregation sheets based on batch ---
+      // Get the sheet named after the respondent's batch (e.g., a sheet named "MS22").
+      var segsheet = ss.getSheetByName(batch);
+      // Check if a sheet for this batch already exists.
+      if (!segsheet) {
+          // If it doesn't exist, create a new sheet with the batch name.
+          segsheet = ss.insertSheet(batch);
+          // Get the header row from the main 'Form Responses 1' sheet.
+          var headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues();
+          // Copy these headers to the newly created batch sheet.
+          segsheet.getRange(1, 1, 1, headers[0].length).setValues(headers);
+      }
+
+      // Copy the entire new row of data from the 'Form Responses 1' sheet.
+      var rowData = sheet.getRange(lastRow, 1, 1, sheet.getLastColumn()).getValues();
+      // Append this row to the end of the corresponding batch sheet.
+      segsheet.appendRow(rowData[0]);
+
       // Send Email
       MailApp.sendEmail({
           to: email,
@@ -32,11 +61,6 @@ function onFormSubmit(e) {
           htmlBody: mail_body
       });
     
-
-      // Update the 'Scan' sheet
-      var scansheet = ss.getSheetByName('Scan');
-      scansheet.getRange(lastRow, 1).setValue(uniqueID);
-      scansheet.getRange(lastRow, 2).setValue('no');
     }
     
 }
