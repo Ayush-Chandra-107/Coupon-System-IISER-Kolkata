@@ -15,7 +15,7 @@ var sheet = ss.getSheetByName('Scan');
 /**
  * This is a special function that runs when a user accesses the web app's URL.
  * It serves the HTML page for the scanner interface.
- * @returns {HtmlOutput} The HTML page to be displayed in the browser.
+ * The HTML page to be displayed in the browser.
  */
 function doGet() {
   // Create an HTML template from the file named 'scanner.html' in the same Apps Script project.
@@ -29,8 +29,8 @@ function doGet() {
  * This is the backend function called by the client-side JavaScript in the scanner HTML.
  * It receives the data from the scanned QR code, finds the corresponding entry in the
  * 'Scan' sheet, updates the status, and sends a response back.
- * @param {string} x The text content decoded from the scanned QR code (expected to be the Unique ID/UTR).
- * @returns {string} A status message to be displayed on the scanner page ("veg", "nonveg", "error", or "UTR not recognised").
+ * The text content decoded from the scanned QR code (expected to be the Unique ID/UTR).
+ * A status message to be displayed on the scanner page ("veg", "nonveg", "error", or "UTR not recognised").
  */
 function sendback(x) {
   // Get all values from column A (where the unique IDs are stored).
