@@ -51,7 +51,7 @@ Everything runs on free Google tooling plus one static web page. There is no ser
 ## How the pieces fit together
 
 ```
- Attendee
+ Volunteers
     │ fills in
     ▼
  Google Form ───────▶ Sheet "Form Responses 1"
