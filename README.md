@@ -83,6 +83,7 @@ The two Apps Script files live in **one** project (they share the `CFG` settings
 | `qr_generate_mail.gs` | Apps Script (bound to the response sheet) | Validation, QR email, `Scan` sheet rows, batch sheets, **Agomoni** menu, bounce scanner |
 | `qr_code_scan.gs` | Same Apps Script project | The scanner backend: JSON API with `verify`, `undo` and `counts` actions |
 | `scanner.html` | GitHub Pages (static hosting) | The volunteer-facing scanner UI |
+| `index.html` | GitHub Pages | Forwards the site root to `scanner.html`, keeping the `?api=…&key=…` part |
 | `README.md` | n/a | This document |
 | `LICENSE.txt` | n/a | MIT license |
 
@@ -222,13 +223,15 @@ Quick test: open `YOUR_EXEC_URL?action=counts&key=YOUR_API_KEY` in a browser. Yo
 
 ### Step 7: Host the scanner on GitHub Pages
 
-1. Put `scanner.html` in the root of this repository (already done if you use this repo).
+1. Put `scanner.html` and `index.html` in the root of this repository (already done if you use this repo).
 2. **Settings → Pages → Build and deployment → Source: Deploy from a branch → `main` / `/ (root)` → Save.**
 3. After a minute the page is live at:
 
    ```
    https://ayush-chandra-107.github.io/Coupon-System-IISER-Kolkata/scanner.html
    ```
+
+The site root (`https://ayush-chandra-107.github.io/Coupon-System-IISER-Kolkata/`) forwards to `scanner.html` via `index.html` and keeps any `?api=…&key=…` part, so either link works. Without `index.html`, GitHub Pages would show this README at the root instead.
 
 The page contains no secrets. The per-year URL and key are supplied through the link you give volunteers.
 
