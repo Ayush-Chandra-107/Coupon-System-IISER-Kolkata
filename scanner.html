@@ -1,185 +1,344 @@
 <!DOCTYPE html>
 <html>
-  <head>
-        <base target="_top">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<style>
+  :root{--ink:#1c1410;--card:#2a201a;--line:#3d3029;--turmeric:#f2b134;--txt:#fbf3e6;--mute:#b9a795;
+        --veg:#1f8a4c;--nonveg:#b4531a;--used:#b3261e;--unk:#5b6470}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;background:var(--ink);color:var(--txt);font:16px/1.4 system-ui,Roboto,sans-serif}
+  body{display:flex;flex-direction:column;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+  header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;gap:10px}
+  h1{margin:0;font-size:18px;font-weight:700;letter-spacing:.2px;flex:1}
+  #count{background:var(--turmeric);color:var(--ink);font-weight:700;border-radius:999px;padding:6px 14px;font-size:15px;white-space:nowrap}
+  #gear{background:none;border:0;color:var(--mute);font-size:20px;min-height:auto;padding:4px 8px}
+  #readerWrap{width:100%;aspect-ratio:1;background:#000;overflow:hidden;position:relative}
+  #reader{width:100%;height:100%}
+  #reader video{width:100%!important;height:100%!important;object-fit:cover}
+  #camMsg{position:absolute;inset:0;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;
+          text-align:center;padding:24px;background:#000;z-index:2}
+  button{font:inherit;font-weight:600;border:0;border-radius:12px;min-height:52px;padding:0 18px;color:var(--txt);background:var(--card)}
+  button.p{background:var(--turmeric);color:var(--ink)}
+  button[disabled]{opacity:.5}
+  .bar{display:flex;gap:10px;padding:12px 16px}
+  .bar button{flex:1}
+  #manual{display:none;gap:10px;padding:0 16px 12px}
+  #manual input{flex:1;min-width:0;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);padding:0 14px;font:inherit}
+  #log{flex:1;overflow-y:auto;padding:0 16px 16px}
+  .row{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+  .row b{display:block}.row small{color:var(--mute)}
+  .tag{align-self:center;border-radius:8px;padding:4px 10px;font-weight:700;font-size:14px;white-space:nowrap}
+  .empty{color:var(--mute);text-align:center;padding:24px 0}
+  #res{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+       padding:24px;z-index:9}
+  #res .ic{font-size:96px;line-height:1}
+  #res .big{font-size:44px;font-weight:800;margin:8px 0}
+  #res .who{font-size:22px}#res .sub{opacity:.85;margin-top:6px}
+  #res .acts{position:absolute;left:16px;right:16px;bottom:calc(20px + env(safe-area-inset-bottom));display:flex;gap:10px}
+  #res button{flex:1;background:rgba(0,0,0,.28)}
+  #res button.n{background:#fff;color:#111}
+  .spin{width:60px;height:60px;border:6px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;
+        animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #setup{position:fixed;inset:0;display:none;flex-direction:column;gap:14px;justify-content:center;
+         padding:24px;z-index:10;background:var(--ink)}
+  #setup h2{margin:0 0 4px}
+  #setup p{color:var(--mute);margin:0 0 8px;font-size:14px}
+  #setup label{font-size:13px;color:var(--mute);margin-bottom:4px;display:block}
+  #setup input{width:100%;height:52px;border-radius:12px;border:1px solid var(--line);background:var(--card);
+               color:var(--txt);padding:0 14px;font:inherit;margin-bottom:14px}
+  #setupErr{color:#ff9a8a;font-size:14px;min-height:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Agomoni Scanner</h1>
+  <div id="count">– / –</div>
+  <button id="gear" onclick="openSetup()" title="Configure this year's event">⚙</button>
+</header>
 
-        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
-        <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" crossorigin="anonymous"></script>
-        <script src="https://unpkg.com/html5-qrcode@2.0.9/dist/html5-qrcode.min.js"></script>
+<div id="readerWrap">
+  <div id="reader"></div>
+  <div id="camMsg"><div id="camTxt">Tap "Start camera" below to scan coupons</div></div>
+  <div id="camStatus" style="position:absolute;top:8px;left:8px;right:8px;font-size:12px;color:#8f8f8f;z-index:3;pointer-events:none"></div>
+</div>
+<div class="bar">
+  <button class="p" id="toggleCam" onclick="toggleCamera()">Start camera</button>
+  <button id="undoLast" onclick="undoLast()" disabled>Undo last scan</button>
+</div>
+<div class="bar">
+  <button id="torch" onclick="toggleTorch()" style="display:none">Torch</button>
+  <button onclick="$('manual').style.display=$('manual').style.display==='flex'?'none':'flex'">Type ID</button>
+</div>
+<div id="manual"><input id="mid" placeholder="e.g. 5511no.2" autocapitalize="off" autocomplete="off">
+  <button class="p" onclick="submitManual()">Verify</button></div>
+<div id="log"><div class="empty">Scanned coupons appear here.</div></div>
 
-        <style>
-      body {
-        font-family: 'Roboto', sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f7f9fb;
-        color: #333;
-      }
+<div id="res">
+  <div class="ic"></div><div class="big"></div><div class="who"></div><div class="sub"></div>
+  <div class="acts"><button id="undo" onclick="undo()">Undo scan</button><button class="n" onclick="closeRes()">Next</button></div>
+</div>
 
-      h1 {
-        text-align: center;
-        margin-bottom: 30px;
-      }
+<div id="setup">
+  <h2>Set up this year's event</h2>
+  <p>Paste the Apps Script URL and key for the current Form/Sheet. This is saved on this device only — do it once per phone, or open the year's share link and it fills in automatically.</p>
+  <div>
+    <label for="cfgUrl">Apps Script /exec URL</label>
+    <input id="cfgUrl" placeholder="https://script.google.com/.../exec" autocapitalize="off" autocomplete="off">
+    <label for="cfgKey">API key</label>
+    <input id="cfgKey" placeholder="the API_KEY value from qr_code_scan.gs" autocapitalize="off" autocomplete="off">
+  </div>
+  <div id="setupErr"></div>
+  <button class="p" onclick="saveSetup()">Save and continue</button>
+</div>
 
-      /* The main container uses flexbox to arrange the scanner and results areas. */
-      .container {
-        display: flex;
-        flex-wrap: wrap; /* Allows items to stack on smaller screens. */
-        gap: 30px;
-        justify-content: center;
-        align-items: flex-start;
-      }
+<script>
+const $ = id => document.getElementById(id);
 
-      /* Styles the div where the camera feed and scanner UI will be rendered. */
-      #qr-reader {
-        width: 100%;
-        max-width: 400px;
-        border: 2px solid #ccc;
-        border-radius: 10px;
-        padding: 10px;
-        background-color: white;
-      }
+// --- Per-year config: read once from the share link (?api=...&key=...), then remember it on
+// this device via localStorage. The HTML file itself never needs editing between years — only
+// the link given out to volunteers changes. The gear icon reopens this screen to reconfigure.
+const STORE_URL = 'agomoni_api_url', STORE_KEY = 'agomoni_api_key';
+let API_URL = '', API_KEY = '';
 
-      /* Styles the div that will display the success or error messages after a scan. */
-      #qr-reader-results {
-        max-width: 300px;
-        background-color: #fff;
-        padding: 15px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      }
+function loadConfig(){
+  const q = new URLSearchParams(location.search);
+  const qUrl = q.get('api'), qKey = q.get('key');
+  if(qUrl && qKey){
+    localStorage.setItem(STORE_URL, qUrl);
+    localStorage.setItem(STORE_KEY, qKey);
+    history.replaceState(null, '', location.pathname);   // scrub the key out of the visible URL/history
+  }
+  API_URL = localStorage.getItem(STORE_URL) || '';
+  API_KEY = localStorage.getItem(STORE_KEY) || '';
+  return !!(API_URL && API_KEY);
+}
 
-      /* Base style for all alert messages (success or error). */
-      .alert {
-        padding: 15px;
-        margin-bottom: 10px;
-        border-radius: 5px;
-        font-weight: bold;
-        opacity: 1;
-        transition: opacity 1s ease-out; /* Defines the fade-out animation. */
-      }
+function openSetup(){
+  $('cfgUrl').value = API_URL;
+  $('cfgKey').value = API_KEY;
+  $('setupErr').textContent = '';
+  $('setup').style.display = 'flex';
+}
 
-      /* Specific style for success messages (green). */
-      .alert-success {
-        background-color: #e6ffed;
-        color: #227a36;
-        border-left: 5px solid #38a169;
-      }
+async function saveSetup(){
+  const url = $('cfgUrl').value.trim(), key = $('cfgKey').value.trim();
+  if(!url || !key){ $('setupErr').textContent = 'Both fields are required.'; return; }
+  if(!/^https:\/\/script\.google\.com\/.*\/exec$/.test(url)){ $('setupErr').textContent = 'That doesn\'t look like an Apps Script /exec URL.'; return; }
+  $('setupErr').textContent = 'Checking…';
+  localStorage.setItem(STORE_URL, url); localStorage.setItem(STORE_KEY, key);
+  API_URL = url; API_KEY = key;
+  try{
+    const c = await api('counts');
+    if(c && c.status === 'error') throw new Error(c.msg || 'Rejected');
+    $('count').textContent = `${c.scanned} / ${c.total}`;
+    $('setup').style.display = 'none';
+  }catch(e){
+    $('setupErr').textContent = 'Saved, but the server didn\'t respond correctly (' + e.message + '). Check the URL/key and that the deployment allows "Anyone".';
+  }
+}
 
-      /* Specific style for error messages (red). */
-      .alert-error {
-        background-color: #ffe6e6;
-        color: #b30000;
-        border-left: 5px solid #e53e3e;
-      }
+async function apiOnce(action, params, timeoutMs){
+  const q = new URLSearchParams(Object.assign({action, key: API_KEY}, params || {}));
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), timeoutMs || 15000);
+  try{
+    const res = await fetch(API_URL + '?' + q.toString(), {signal: ctrl.signal});
+    if(!res.ok) throw new Error('Server error ' + res.status);
+    return await res.json();
+  } finally { clearTimeout(t); }
+}
 
-      /* This class is added via JavaScript to trigger the fade-out animation. */
-      .fade-out {
-        opacity: 0;
-      }
-    </style>
+// Plain single-attempt call for actions where a blind retry is harmless (undo, counts).
+async function api(action, params){
+  return await apiOnce(action, params);
+}
 
-    <script type="text/javascript">
+const THEME = {food:['✓','FOOD','--veg'], veg:['✓','VEG','--veg'], nonveg:['✓','NON-VEG','--nonveg'], used:['✕','ALREADY USED','--used'],
+               unknown:['?','NOT FOUND','--unk'], busy:['⏳','SERVER BUSY — SCAN AGAIN','--unk'], error:['!','TRY AGAIN','--unk']};
+let qr, busy = false, lastCode = '', lastAt = 0, torchOn = false, closeTimer, current = null, lastSuccess = null;
 
-      // --- Global variables for client-side script ---
-      // Stores the text of the last successfully scanned QR code to prevent duplicate processing.
-      var lastResult = null;
-      // A simple counter for the number of scans.
-      var countResults = 0;
+function beep(ok){
+  try{ const c = new (window.AudioContext||window.webkitAudioContext)(), o = c.createOscillator(), g = c.createGain();
+    o.connect(g); g.connect(c.destination); o.frequency.value = ok ? 880 : 220; g.gain.value = .15;
+    o.start(); o.stop(c.currentTime + (ok ? .12 : .4)); }catch(e){}
+}
 
-      /**
-       * This is the callback function that the html5-qrcode library executes
-       * whenever a QR code is successfully detected and decoded.
-       * @param {string} decodedText The text content extracted from the QR code.
-       * @param {object} decodedResult An object containing more detailed scan results.
-       */
-      async function onScanSuccess(decodedText, decodedResult) {
-        // This 'if' statement is a simple debounce mechanism. It ensures that if the camera
-        // reads the same QR code multiple times in a row, we only process it once.
-        if (decodedText !== lastResult) {
-          ++countResults;
-          lastResult = decodedText;
+function dbg(s){ const el = $('camStatus'); if(el) el.textContent = s; console.log('[scanner]', s); }
 
-          // Use `google.script.run` to call a server-side Apps Script function.
-          // `withSuccessHandler` defines a function to run when the server-side call completes successfully.
-          google.script.run.withSuccessHandler(function(response) {
-            // 'response' contains the return value from the 'sendback' function (e.g., "veg", "error").
-            const resultsDiv = $('#qr-reader-results'); // Get the results display area using jQuery.
+let scanning = false, camBusy = false;
 
-            // Initialize variables for the message text and CSS class.
-            let message = '';
-            let alertClass = 'alert-success';
+async function toggleCamera(){
+  if(camBusy) return;
+  camBusy = true;
+  try{ if(scanning) await stopCam(); else await startCam(); }
+  finally{ camBusy = false; }
+}
 
-            // Determine the message and alert style based on the server's response.
-            if (response.toLowerCase().includes("nonveg")){
-              message = `✅ Non-Veg Coupon verified Successfully!`;
-            } else if (response.toLowerCase().includes("veg")) {
-              message = `✅ Veg Coupon verified Successfully!`;
-            } else if (response === "error") {
-              message = `⚠️ Error: QR code already scanned!`;
-              alertClass = 'alert-error';
-            } else if (response === "UTR not recognised") {
-              message = `⚠️ Error: UTR not recognised!`;
-              alertClass = 'alert-error';
-            } 
+async function stopCam(){
+  if(qr){ try{ await qr.stop(); }catch(e){} try{ qr.clear(); }catch(e){} qr = null; }
+  scanning = false;
+  $('toggleCam').textContent = 'Start camera';
+  $('torch').style.display = 'none'; torchOn = false;
+  $('camTxt').textContent = 'Camera stopped. Tap "Start camera" below to resume.';
+  $('camMsg').style.display = 'flex';
+  dbg('');
+}
 
-            // Create a unique ID for the new message element using the current timestamp.
-            const messageId = `message-${Date.now()}`;
-            // Add the new message to the top of the results div.
-            resultsDiv.prepend(`<div id="${messageId}" class="alert ${alertClass}">${message}</div>`);
+async function startCam(){
+  $('camMsg').style.display = 'flex';
+  $('camTxt').textContent = 'Requesting camera…';
+  dbg('checking environment…');
 
-            // Set a timer to automatically fade out and remove the message after a delay.
-            // After 15 seconds, add the 'fade-out' class to start the transition.
-            setTimeout(() => {
-              $(`#${messageId}`).addClass('fade-out');
-              // After another second (once the fade is complete), remove the element from the page.
-              setTimeout(() => {
-                $(`#${messageId}`).remove();
-              }, 1000);
-            }, 15000);
+  if (!window.isSecureContext) { fail('Page is not HTTPS/secure — camera is blocked. (isSecureContext=false)'); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { fail('This browser has no camera API (navigator.mediaDevices missing). Try Chrome.'); return; }
 
-          // This is the actual call to the server-side function. It calls 'sendback' and passes the QR code text as an argument.
-          }).sendback(decodedText);
+  let watchdog = setTimeout(() => {
+    fail('Camera request is stuck after 8s with no browser prompt. This usually means camera was already denied for this site — open the site info / lock icon next to the address bar, set Camera to Allow, then reload the page and tap Start again.');
+  }, 8000);
 
-          await waitme(); // Wait for the 'waitme' function to complete.
-        }
-      }
+  try{
+    dbg('calling getUserMedia…');
+    const probe = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    probe.getTracks().forEach(t => t.stop());
+    dbg('permission granted, starting scanner…');
 
-      /**
-       * A simple helper function that returns a Promise which resolves after a 1-second delay.
-       * This can be used to add a small pause between processing different QR codes.
-       */
-      function waitme() {
-        return new Promise(resolve => {
-          setTimeout(() => resolve('ok'), 1000);
-        });
-      }
+    qr = qr || new Html5Qrcode('reader', {formatsToSupport:[Html5QrcodeSupportedFormats.QR_CODE]});
+    await qr.start({facingMode:'environment'},
+      {fps:12, aspectRatio:1, qrbox:(w,h)=>{const s=Math.floor(Math.min(w,h)*.75);return {width:s,height:s};}},
+      onScan, ()=>{});
+    clearTimeout(watchdog);
+    $('camMsg').style.display = 'none';
+    dbg('');
+    scanning = true;
+    $('toggleCam').textContent = 'Stop camera';
+    try{ if(qr.getRunningTrackCapabilities().torch) $('torch').style.display = ''; }catch(e){}
+  }catch(e){
+    clearTimeout(watchdog);
+    fail((e && e.name ? e.name + ': ' : '') + (e && e.message ? e.message : e));
+  }
+}
+function fail(msg){
+  const t = $('camTxt'); if(t) t.textContent = msg;
+  const m = $('camMsg'); if(m) m.style.display = 'flex';
+  dbg('');
+}
+async function toggleTorch(){
+  try{ torchOn = !torchOn; await qr.applyVideoConstraints({advanced:[{torch:torchOn}]});
+       $('torch').textContent = torchOn ? 'Torch on' : 'Torch'; }catch(e){}
+}
 
-      // This code block runs after the page has loaded.
-      // It waits 500ms to ensure all elements are available in the DOM.
-      setTimeout(function() {
-        // Create a new instance of the Html5QrcodeScanner, telling it to render inside the div with id 'qr-reader'.
-        // { fps: 10, qrbox: 250 } are configuration options: scan at 10 frames per second and draw a 250x250px scanning box.
-        const scanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
-        // Start the scanner and tell it to call our `onScanSuccess` function when it finds a code.
-        scanner.render(onScanSuccess);
-      }, 500);
+function onScan(text){
+  const now = Date.now();
+  if(busy || (text === lastCode && now - lastAt < 4000)) return;
+  verify(text);
+}
+function submitManual(){ const v = $('mid').value.trim(); if(v && !busy){ verify(v); $('mid').value = ''; } }
 
-      // This event listener tries to prevent accidental closing of the page.
-      // It will prompt the user with a confirmation dialog if they try to refresh or close the tab.
-      window.addEventListener('beforeunload', function (e) {
-        e.preventDefault();
-        e.returnValue = '3'; // This value is required for legacy browser compatibility.
-      });
-    </script>
-  </head>
+async function verify(code){
+  busy = true; lastCode = code; lastAt = Date.now();
+  current = {code, r: null};
+  showPending(code, 'Verifying…');
+  let r;
+  try{
+    r = await apiOnce('verify', {code});
+  }catch(e1){
+    // The first attempt may well have already succeeded server-side even though its response
+    // never arrived — re-check the real state instead of just declaring failure.
+    try{
+      r = await apiOnce('verify', {code});
+      if(r && r.status === 'used'){
+        r = { status: 'ok', kind: r.kind, veg: r.veg, name: r.name, batch: r.batch, counts: r.counts, msg: 'Recorded (first reply was just slow to arrive).' };
+      }
+    }catch(e2){
+      r = {status:'error', msg:'Server not reachable after two tries. Scan again.'};
+    }
+  }
+  show(code, r);
+}
 
-  <body>
-    <h1>Agomoni QR Code Scanner</h1>
-        <div class="container">
-            <div id="qr-reader"></div>
-            <div id="qr-reader-results"></div>
-    </div>
-  </body>
+function showPending(code, label){
+  clearTimeout(closeTimer);
+  const el = $('res');
+  el.style.background = 'var(--unk)';
+  el.querySelector('.ic').innerHTML = '<div class="spin"></div>';
+  el.querySelector('.big').textContent = label;
+  el.querySelector('.who').textContent = '';
+  el.querySelector('.sub').textContent = code;
+  el.querySelector('.acts').style.display = 'none';
+  el.style.display = 'flex';
+}
+
+function show(code, r){
+  dbg('');
+  current = {code, r};
+  const key = r.status === 'ok' ? (r.kind || (r.veg ? 'veg' : 'nonveg')) : r.status;   // `kind` comes from the backend (CFG.VEG_SPLIT)
+  const t = THEME[key] || THEME.error, el = $('res');
+  el.style.background = `var(${t[2]})`;
+  el.querySelector('.acts').style.display = 'flex';
+  el.querySelector('.ic').textContent = t[0];
+  el.querySelector('.big').textContent = t[1];
+  el.querySelector('.who').textContent = r.name ? `${r.name} · ${r.batch || ''}` : '';
+  el.querySelector('.sub').textContent = r.msg || '';
+  $('undo').style.display = r.status === 'ok' ? '' : 'none';
+  if(r.status === 'ok'){ lastSuccess = { code, name: r.name, batch: r.batch }; $('undoLast').disabled = false; }
+  el.style.display = 'flex';
+  if(r.counts) $('count').textContent = `${r.counts.scanned} / ${r.counts.total}`;
+  beep(r.status === 'ok'); if(navigator.vibrate) navigator.vibrate(r.status === 'ok' ? 80 : [200,80,200]);
+  addLog(key, t[1], r, code);
+  clearTimeout(closeTimer);
+  if(r.status === 'ok') closeTimer = setTimeout(closeRes, 2500);
+}
+function closeRes(){ clearTimeout(closeTimer); $('res').style.display = 'none'; busy = false; lastAt = Date.now(); }
+
+function undo(){
+  // Guards against tapping "Undo scan" just as (or after) this same popup auto-closed on its own —
+  // that stale tap used to be able to fire while the camera had already moved on to a new scan.
+  if(!current || $('res').style.display !== 'flex') return;
+  const c = current.code;
+  busy = true;
+  showPending(c, 'Undoing…');
+  api('undo', {code: c}).then(r => { if(r && r.counts) $('count').textContent = `${r.counts.scanned} / ${r.counts.total}`;
+    if(lastSuccess && lastSuccess.code === c){ lastSuccess = null; $('undoLast').disabled = true; }
+    lastCode = ''; closeRes(); }).catch(() => closeRes());
+}
+
+function undoLast(){
+  if(!lastSuccess) return;
+  const {code, name} = lastSuccess;
+  $('undoLast').disabled = true;
+  $('undoLast').textContent = 'Undoing…';
+  api('undo', {code}).then(r => {
+    if(r && r.counts) $('count').textContent = `${r.counts.scanned} / ${r.counts.total}`;
+    addLog('unk', 'UNDONE', {name}, code);
+    if(lastCode === code) lastCode = '';
+    lastSuccess = null;
+  }).catch(() => {}).finally(() => {
+    $('undoLast').textContent = 'Undo last scan';
+    $('undoLast').disabled = !lastSuccess;
+  });
+}
+
+function addLog(key, label, r, code){
+  const log = $('log'); if(log.querySelector('.empty')) log.innerHTML = '';
+  const col = `var(${(THEME[key]||THEME.error)[2]})`, d = document.createElement('div');
+  d.className = 'row';
+  d.innerHTML = `<div><b></b><small></small></div><span class="tag" style="background:${col}"></span>`;
+  d.querySelector('b').textContent = r.name || code;
+  d.querySelector('small').textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + (r.name ? ' · ' + code : '');
+  d.querySelector('.tag').textContent = label;
+  log.prepend(d); while(log.children.length > 25) log.lastChild.remove();
+}
+
+window.onload = () => {
+  if(loadConfig()){
+    api('counts').then(c => $('count').textContent = `${c.scanned} / ${c.total}`).catch(()=>{});
+  } else {
+    openSetup();
+  }
+};
+</script>
+</body>
 </html>
