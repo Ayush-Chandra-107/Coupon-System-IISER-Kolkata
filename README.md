@@ -44,7 +44,7 @@ Everything runs on free Google tooling plus one static web page. There is no ser
 - A mobile-first scanner page: big camera view, full-screen colour-coded results, torch, scan log and a live `scanned / total` counter.
 - Start/Stop camera button, an **Undo last scan** button, an **Undo scan** button on every success popup, and a **Type ID** fallback for damaged QR codes.
 - A "Verifying…" screen as soon as a QR is read, so volunteers can lower the phone while the server works.
-- Safe with several phones at once: a server-side lock means two phones can never both succeed on the same coupon.
+- Safe with several phones at once: a server-side lock means two phones can never both succeed on the same coupon scan.
 
 ---
 
