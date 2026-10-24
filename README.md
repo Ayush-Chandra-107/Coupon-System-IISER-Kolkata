@@ -51,7 +51,7 @@ Everything runs on free Google tooling plus one static web page. There is no ser
 ## How the pieces fit together
 
 ```
- Voluteer
+ Attendee
     │ fills in
     ▼
  Google Form ───────▶ Sheet "Form Responses 1"
@@ -131,7 +131,7 @@ The script reads these **column numbers**. They must match your form (see [Custo
 
 The value matching `CFG.NO_FOOD` (default `No food`, case-insensitive) means **no coupon**. For every other value, the scanner shows Veg or Non-veg (any value containing "non" is non-veg) when `CFG.VEG_SPLIT` is `true`, or a single **FOOD** screen when it is `false`. See [Food options](#food-options-vegnon-veg-or-just-food).
 
-### `Scan` (you create this once; see setup)
+### `Scan` (created automatically)
 
 | Col | Content | Written by |
 |---|---|---|
@@ -160,9 +160,9 @@ You will need: a Google account to own the Form/Sheet/script, and a GitHub accou
 2. Responses tab → **Link to Sheets** → create a new spreadsheet.
 3. Check the column order against the [table above](#form-responses-1-created-by-google-forms). The first sheet must be named `Form Responses 1` (the default).
 
-### Step 2: Create the `Scan` sheet
+### Step 2: The `Scan` sheet (nothing to do)
 
-In the same spreadsheet add an empty sheet named exactly **`Scan`**. Optionally put headers in row 1: `ID, Scanned, Food pref, Name, Scanned at, Batch`.
+The script creates a sheet named **`Scan`** (with a bold, frozen header row) the first time it is needed: on the first coupon email, or the first scanner request. You can create it yourself beforehand if you prefer; just keep the name and column order from the [table above](#scan-created-automatically).
 
 ### Step 3: Add the two Apps Script files
 
@@ -372,7 +372,7 @@ Responses are JSON:
 The scanner page itself **never changes**. Each year:
 
 1. Create a new Form and linked spreadsheet (or copy last year's).
-2. Create the `Scan` sheet.
+2. *(The `Scan` sheet creates itself.)*
 3. Add the two `.gs` files; update `CFG` (organiser email, subject, domain, columns if needed) and the email text in `mailBody_()`.
 4. Set a **fresh `API_KEY`**.
 5. Add the `onFormSubmit` trigger.
