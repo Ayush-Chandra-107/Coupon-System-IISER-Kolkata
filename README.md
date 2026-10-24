@@ -285,6 +285,9 @@ Buttons:
 
 While any full-screen result or the "Verifying…" screen is showing, **no new scan is accepted**. Success popups close themselves; every other result stays until **Next** is tapped, so problems are never missed.
 
+**Tip: If you see  any kind of error on the first try to scan, and see "already scanned" on the next try on the same coupon, let the person pass through**
+
+
 ### Organisers: the Agomoni menu
 
 In the response sheet, **Agomoni** provides:
